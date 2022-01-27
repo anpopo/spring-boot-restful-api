@@ -1,4 +1,4 @@
-package study.springbootrestfulapi;
+package study.springbootrestfulapi.helloworld;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
