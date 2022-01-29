@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
@@ -30,7 +31,7 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    public ResponseEntity createUser(@RequestBody User user) {
+    public ResponseEntity createUser(@Valid @RequestBody User user) {
         User savedUser = service.save(user);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -50,7 +51,7 @@ public class UserController {
     }
 
     @PutMapping("/users")
-    public User updateUser(@RequestBody User  user) {
+    public User updateUser(@Valid @RequestBody User  user) {
         User updateUser = service.updateUser(user);
         if (Objects.isNull(updateUser)) throw new UserNotFoundException(String.format("ID[%s] not found", user.getId()));
         return updateUser;
