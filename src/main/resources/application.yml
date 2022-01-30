@@ -3,4 +3,10 @@ server:
 
 logging:
   level:
-    org.springframework: debug
+    org.springframework: info
+
+
+spring:
+  messages:
+    basename: messages
+    encoding: UTF-8
