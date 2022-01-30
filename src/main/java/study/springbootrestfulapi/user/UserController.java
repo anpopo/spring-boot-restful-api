@@ -1,6 +1,10 @@
 package study.springbootrestfulapi.user;
 
+import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -18,16 +22,29 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    public List<User> retrieveAllUsers() {
-        return service.findAll();
+    public MappingJacksonValue retrieveAllUsers() {
+        List<User> users = service.findAll();
+
+        SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "name", "joinDate");
+        FilterProvider provider = new SimpleFilterProvider().addFilter("UserInfoV1", filter);
+        MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(users);
+        mappingJacksonValue.setFilters(provider);
+
+        return mappingJacksonValue;
     }
 
     @GetMapping("/users/{id}")
-    public User retrieveUser(@PathVariable(name = "id") int id) {
+    public MappingJacksonValue retrieveUser(@PathVariable(name = "id") int id) {
         User findUser = service.findOne(id);
 
         if (Objects.isNull(findUser)) throw new UserNotFoundException(String.format("ID[%s] not found", id));
-        return findUser;
+
+        SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "name", "joinDate", "ssn");
+        FilterProvider provider = new SimpleFilterProvider().addFilter("UserInfoV1", filter);
+
+        MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(findUser);
+        mappingJacksonValue.setFilters(provider);
+        return mappingJacksonValue;
     }
 
     @PostMapping("/users")
