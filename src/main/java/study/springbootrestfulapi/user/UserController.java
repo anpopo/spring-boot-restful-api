@@ -3,6 +3,8 @@ package study.springbootrestfulapi.user;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +15,9 @@ import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RestController
 public class UserController {
     private final UserDaoService service;
@@ -21,6 +26,7 @@ public class UserController {
         this.service = service;
     }
 
+    @ApiOperation(value = "모든 유저 정보 조회")
     @GetMapping("/users")
     public MappingJacksonValue retrieveAllUsers() {
         List<User> users = service.findAll();
@@ -39,10 +45,14 @@ public class UserController {
 
         if (Objects.isNull(findUser)) throw new UserNotFoundException(String.format("ID[%s] not found", id));
 
-        SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "name", "joinDate", "ssn");
+        EntityModel<User> entityModel = EntityModel.of(findUser);
+
+        entityModel.add(linkTo(methodOn(this.getClass()).retrieveAllUsers()).withRel("all-users"));
+
+        SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("id", "name", "joinDate");
         FilterProvider provider = new SimpleFilterProvider().addFilter("UserInfoV1", filter);
 
-        MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(findUser);
+        MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(entityModel);
         mappingJacksonValue.setFilters(provider);
         return mappingJacksonValue;
     }
